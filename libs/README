@@ -1,0 +1,2 @@
+Note: lib_tke and lib_uke assume that Linux SGX SDK Git repo is at
+../../linux-sgx (relative to this README).
