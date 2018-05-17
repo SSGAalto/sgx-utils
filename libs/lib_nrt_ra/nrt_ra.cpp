@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 /* Copyright (c) 2018 Aalto University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,20 +51,20 @@
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
 #endif
+
+#include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include <curl/curl.h>
+
+#include <sgx_uae_service.h>
+#include <sgx_ecp_types.h>
+
+#include "nrt_ra.h"
 #include "nrt_ukey_exchange.h"
 #include "nrt_tke_u.h"
-
-#include "se_memcpy.h"
-#include "nrt_ra.h"
-#include "sgx_uae_service.h"
-#include "sgx_ecp_types.h"
-#include "se_lock.hpp"
-
-#include "se_cdefs.h"
 
 #ifndef ERROR_BREAK
 #define ERROR_BREAK(x)  if(x){break;}
@@ -180,7 +179,7 @@ sgx_status_t nrt_ra_get_msg_quote( sgx_enclave_id_t eid,
 
     (*p_msg_quote_full)->type = TYPE_NRT_RA_MSG_QUOTE;
     (*p_msg_quote_full)->size = msg_quote_size;
-    if(memcpy_s((*p_msg_quote_full)->body, msg_quote_size, p_msg_quote, msg_quote_size))
+    if(memcpy((*p_msg_quote_full)->body, p_msg_quote, msg_quote_size))
     {
         free( p_msg_quote );
         free( p_msg_quote_full );

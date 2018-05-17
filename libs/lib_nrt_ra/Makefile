@@ -28,61 +28,111 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 #
-#
-# Copyright (c) 2018 Aalto University
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#  http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
-TOP_DIR  = ../../linux-sgx
-include $(TOP_DIR)/buildenv.mk
+######## SGX SDK Settings ########
 
-CFLAGS   += -Werror
-CXXFLAGS += -Werror
+SGX_SDK ?= /opt/intel/sgxsdk
+SGX_MODE ?= HW
+SGX_ARCH ?= x64
+SGX_DEBUG ?= 1
 
-INCLUDE += -I$(COMMON_DIR)/inc/internal \
-           -I$(COMMON_DIR)/inc
+ifeq ($(shell getconf LONG_BIT), 32)
+	SGX_ARCH := x86
+else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
+	SGX_ARCH := x86
+endif
 
-INCLUDE += -I$(SGX_IPP_INC) 
+ifeq ($(SGX_ARCH), x86)
+	SGX_COMMON_CFLAGS := -m32
+	SGX_LIBRARY_PATH := $(SGX_SDK)/lib
+	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x86/sgx_sign
+	SGX_EDGER8R := $(SGX_SDK)/bin/x86/sgx_edger8r
+else
+	SGX_COMMON_CFLAGS := -m64
+	SGX_LIBRARY_PATH := $(SGX_SDK)/lib64
+	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x64/sgx_sign
+	SGX_EDGER8R := $(SGX_SDK)/bin/x64/sgx_edger8r
+endif
 
-INCLUDE += -I../lib_tke -I../lib_uke
+ifeq ($(SGX_DEBUG), 1)
+ifeq ($(SGX_PRERELEASE), 1)
+$(error Cannot set SGX_DEBUG and SGX_PRERELEASE at the same time!!)
+endif
+endif
 
-vpath %.cpp $(COMMON_DIR)/src
+ifeq ($(SGX_DEBUG), 1)
+        SGX_COMMON_CFLAGS += -O0 -g
+else
+        SGX_COMMON_CFLAGS += -O2
+endif
 
-vpath %.c $(TOP_DIR)/common/src
+######## Dependencies and output ########
+Build_Dir := .
+Generated_Dir := .
 
-CXXFLAGS += -fPIC -fno-rtti $(INCLUDE)
-CFLAGS += -fPIC $(INCLUDE)
+Lib_NrtTke := ../lib_tke
+Lib_NrtUke := ../lib_uke
 
-OBJ := nrt_ra.o
+######## Lib Settings ########
 
-LIBNAME := libnrt_ra.a
+ifneq ($(SGX_MODE), HW)
+	Urts_Library_Name := sgx_urts_sim
+	Trts_Library_Name := sgx_trts_sim
+	UService_Library_Name := sgx_uae_service_sim
+	Service_Library_Name := sgx_tservice_sim
+else
+	Urts_Library_Name := sgx_urts
+	Trts_Library_Name := sgx_trts
+	UService_Library_Name := sgx_uae_service
+	Service_Library_Name := sgx_tservice
+endif
 
-.PHONY: all
-all: $(LIBNAME) | $(BUILD_DIR)
-	$(CP) $< $|
+Crypto_Library_Name := sgx_tcrypto
 
-$(LIBNAME): $(OBJ)
+Lib_Cpp_Files := nrt_ra.cpp
+
+Lib_Include_Paths := -I$(SGX_SDK)/include \
+			 -I$(Lib_NrtTke) -I$(Lib_NrtUke)
+
+Lib_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(Lib_Include_Paths) \
+			-fpie -fstack-protector
+
+# Three configuration modes - Debug, prerelease, release
+#   Debug - Macro DEBUG enabled.
+#   Prerelease - Macro NDEBUG and EDEBUG enabled.
+#   Release - Macro NDEBUG enabled.
+ifeq ($(SGX_DEBUG), 1)
+        Lib_C_Flags += -DDEBUG -UNDEBUG -UEDEBUG
+else ifeq ($(SGX_PRERELEASE), 1)
+        Lib_C_Flags += -DNDEBUG -DEDEBUG -UDEBUG
+else
+        Lib_C_Flags += -DNDEBUG -UEDEBUG -UDEBUG
+endif
+
+Lib_Cpp_Flags := $(Lib_C_Flags) -std=c++11
+
+Lib_Libs :=   -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name)
+
+Lib_Link_Flags := $(SGX_COMMON_CFLAGS) $(Lib_Libs)
+
+Lib_Cpp_Objects := $(Lib_Cpp_Files:%.cpp=%.o)
+
+Lib_Name := libnrt_ra.a
+
+.PHONY: all run
+
+all: $(Lib_Name)
+
+######## Lib Objects ########
+
+$(Lib_Cpp_Objects): $(Lib_Cpp_Files)
+	@$(CXX) $(Lib_Cpp_Flags) -c $< -o $@
+
+$(Lib_Name): $(Lib_Cpp_Objects)
 	$(AR) rcsD $@ $^
-
-$(BUILD_DIR):
-	@$(MKDIR) $@
+	@echo "AR =>  $@"
 
 .PHONY: clean
-clean:
-	@$(RM) $(OBJ)
-	@$(RM) $(LIBNAME) $(BUILD_DIR)/$(LIBNAME)
 
-.PHONY: rebuild
-rebuild:
-	$(MAKE) clean
-	$(MAKE) all
+clean:
+	@rm -f $(Lib_Name) $(Lib_Cpp_Objects)
