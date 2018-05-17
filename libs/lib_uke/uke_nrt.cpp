@@ -54,15 +54,13 @@
 #endif
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "se_memcpy.h"
 #include "nrt_ukey_exchange.h"
-#include "sgx_uae_service.h"
-#include "sgx_ecp_types.h"
-#include "se_lock.hpp"
+#include <sgx_uae_service.h>
+#include <sgx_ecp_types.h>
 
-#include "se_cdefs.h"
-// Now sure what it does SGX_ACCESS_VERSION(ukey_exchange, 1)
+// Not sure what it does SGX_ACCESS_VERSION(ukey_exchange, 1)
 // SGX_ACCESS_VERSION(nrt_uke, 1)
 
 #ifndef ERROR_BREAK
@@ -126,7 +124,11 @@ sgx_status_t nrt_ra_get_quote(
             ret = SGX_ERROR_UNEXPECTED;
             goto CLEANUP;
         }
+#ifdef __cplusplus
         uint32_t msg_quote_size = static_cast<uint32_t>(sizeof(nrt_ra_msg_quote_t)) + quote_size;
+#else
+        uint32_t msg_quote_size = (uint32_t)(sizeof(nrt_ra_msg_quote_t)) + quote_size;
+#endif
         p_msg_quote = (nrt_ra_msg_quote_t *)malloc(msg_quote_size);
         if(!p_msg_quote)
         {
