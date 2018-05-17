@@ -126,14 +126,26 @@ all: $(Lib_Name)
 
 ######## Lib Objects ########
 
-$(Lib_Cpp_Objects): $(Lib_Cpp_Files)
-	@$(CXX) $(Lib_C_Flags) -c $< -o $@
+$(Generated_Dir)/nrt_tke_u.c: $(SGX_EDGER8R) $(Lib_NrtTke)/nrt_tke.edl
+	$(SGX_EDGER8R) --untrusted $(Lib_NrtTke)/nrt_tke.edl \
+		--search-path $(SGX_SDK)/include \
+		--trusted-dir   $(Generated_Dir) \
+		--untrusted-dir $(Generated_Dir)
+	@echo "GEN  =>  $@"
 
-$(Lib_Name): $(Lib_Cpp_Objects)
+$(Lib_Cpp_Objects): $(Lib_Cpp_Files) $(Generated_Dir)/nrt_tke_u.o
+	@$(CXX) $(Lib_Cpp_Flags) -c $< -o $@
+
+$(Generated_Dir)/nrt_tke_u.o: $(Generated_Dir)/nrt_tke_u.c
+	@$(CXX) $(Lib_Cpp_Flags) -c $< -o $@
+
+$(Lib_Name): $(Lib_Cpp_Objects) $(Generated_Dir)/nrt_tke_u.o
 	$(AR) rcsD $@ $^
 	@echo "AR =>  $@"
 
 .PHONY: clean
 
 clean:
-	@rm -f $(Lib_Name) $(Lib_Cpp_Objects)
+	@rm -f $(Lib_Name) $(Lib_Cpp_Objects) \
+		$(Generated_Dir)/nrt_tke_u.* \
+		$(Generated_Dir)/nrt_tke_t.*

@@ -57,6 +57,7 @@
 #include <string.h>
 
 #include "nrt_ukey_exchange.h"
+#include "nrt_tke_u.h"
 #include <sgx_uae_service.h>
 #include <sgx_ecp_types.h>
 
