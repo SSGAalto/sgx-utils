@@ -46,16 +46,27 @@
 
 #include <stdint.h>
 #include <vector>
+#include <sgx_trts.h>
+#include <sgx_utils.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sgx_spinlock.h>
 #include "nrt_tke.h"
-#include "sgx_trts.h"
-#include "sgx_utils.h"
-#include "ecp_interface.h"
-#include "util.h"
-#include "string.h"
-#include "stdlib.h"
-#include "sgx_spinlock.h"
 #include "nrt_tke_t.h"
-#include "se_cdefs.h"
+
+#if defined(__clang__)
+#if __has_builtin(__builtin_expect)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#endif
+#elif defined(__GNUC__)
+#if (__GNUC__ >= 3)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#endif
+#endif
+
+#ifndef unlikely
+#define unlikely(x) (x)
+#endif
 
 // Add a version to tkey_exchange.
 // SGX_ACCESS_VERSION(tkey_exchange, 1)

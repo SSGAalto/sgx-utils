@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 /* Copyright (c) 2018 Aalto University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
