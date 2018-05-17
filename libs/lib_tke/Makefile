@@ -162,21 +162,21 @@ endif
 
 ######## Lib Objects ########
 
-$(Generated_Dir)/tke_nrt_t.c: $(SGX_EDGER8R) nrt_tke.edl
+$(Generated_Dir)/nrt_tke_t.c: $(SGX_EDGER8R) nrt_tke.edl
 	$(SGX_EDGER8R) --trusted nrt_tke.edl \
 		--search-path $(SGX_SDK)/include \
 		--trusted-dir   $(Generated_Dir) \
 		--untrusted-dir $(Generated_Dir)
 	@echo "GEN  =>  $@"
 
-$(Generated_Dir)/tke_nrt_t.o: $(Generated_Dir)/tke_nrt_t.c
+$(Generated_Dir)/nrt_tke_t.o: $(Generated_Dir)/nrt_tke_t.c
 	@$(CC) $(Lib_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
-$(Lib_Cpp_Objects): $(Lib_Cpp_Files) $(Generated_Dir)/tke_nrt_t.c
+$(Lib_Cpp_Objects): $(Lib_Cpp_Files) $(Generated_Dir)/nrt_tke_t.c
 	@$(CXX) $(Lib_C_Flags) -c $< -o $@
 
-$(Lib_Name): $(Lib_Cpp_Objects)
+$(Lib_Name): $(Lib_Cpp_Objects) $(Generated_Dir)/nrt_tke_t.o
 	$(AR) rcsD $@ $^
 	@echo "AR =>  $@"
 

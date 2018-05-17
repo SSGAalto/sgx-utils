@@ -46,6 +46,7 @@
 
 enclave {
     from "sgx_tae_service.edl" import *;
+    include "nrt_key_exchange.h"
     trusted {
         public sgx_status_t nrt_ra_get_ga(nrt_ra_context_t context,
             [out] sgx_ec256_public_t *g_a);
