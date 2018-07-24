@@ -109,7 +109,7 @@ endif
 
 Lib_Cpp_Flags := $(Lib_C_Flags) -std=c++03 -nostdinc++
 
-Lib_Libs :=   -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name)
+Lib_Libs :=   -L$(SGX_LIBRARY_PATH) -l$(Trts_Library_Name)
 
 Lib_Link_Flags := $(SGX_COMMON_CFLAGS) $(Lib_Libs)
 
@@ -170,11 +170,11 @@ $(Generated_Dir)/nrt_tke_t.c: $(SGX_EDGER8R) nrt_tke.edl
 	@echo "GEN  =>  $@"
 
 $(Generated_Dir)/nrt_tke_t.o: $(Generated_Dir)/nrt_tke_t.c
-	@$(CC) $(Lib_C_Flags) -c $< -o $@
+	@$(CC) $(Lib_Link_Flags) $(Lib_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
 $(Lib_Cpp_Objects): $(Lib_Cpp_Files) $(Generated_Dir)/nrt_tke_t.c
-	@$(CXX) $(Lib_C_Flags) -c $< -o $@
+	@$(CXX) $(Lib_Link_Flags) $(Lib_C_Flags) -c $< -o $@
 
 $(Lib_Name): $(Lib_Cpp_Objects) $(Generated_Dir)/nrt_tke_t.o
 	$(AR) rcsD $@ $^

@@ -179,12 +179,7 @@ sgx_status_t nrt_ra_get_msg_quote( sgx_enclave_id_t eid,
 
     (*p_msg_quote_full)->type = TYPE_NRT_RA_MSG_QUOTE;
     (*p_msg_quote_full)->size = msg_quote_size;
-    if(memcpy((*p_msg_quote_full)->body, p_msg_quote, msg_quote_size))
-    {
-        free( p_msg_quote );
-        free( p_msg_quote_full );
-        return SGX_ERROR_UNEXPECTED;
-    }
+    memcpy((*p_msg_quote_full)->body, p_msg_quote, msg_quote_size);
 
     free( p_msg_quote );
     return SGX_SUCCESS;
