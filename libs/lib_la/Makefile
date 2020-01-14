@@ -130,7 +130,7 @@ UnTrustLibAdditionalCppFiles := ../lib_net/src/network_common.cpp
 # This Block should be generic enough to not need modification
 TrustLib_Cpp_Files := $(wildcard $(TrustLib_Folder)/*.cpp) 
 TrustLib_Cpp_Objects := $(TrustLib_Cpp_Files:.cpp=.o)
-TrustLib_Include_Paths := -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I$(SGX_SDK)/include/epid $(CommonIncludes) $(TrustLib_Additional_Includes) -I./$(TrustLib_Folder) -I$(UnTrustLib_Folder) -I.
+TrustLib_Include_Paths := -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/stlport -I$(SGX_SDK)/include/libcxx -I$(SGX_SDK)/include/epid $(CommonIncludes) $(TrustLib_Additional_Includes) -I./$(TrustLib_Folder) -I$(UnTrustLib_Folder) -I.
 TrustLib_Compile_Flags := $(SGX_COMMON_CFLAGS) -nostdinc -fvisibility=hidden -fpie -fstack-protector  $(TrustLib_Include_Paths)
 TrustLib_Compile_Cxx_Flags :=  -std=c++11 -nostdinc++
 
