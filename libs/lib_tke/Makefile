@@ -89,9 +89,8 @@ Crypto_Library_Name := sgx_tcrypto
 Lib_Cpp_Files := tke_nrt.cpp
 
 Lib_Include_Paths := -I$(SGX_SDK)/include \
-			 -I$(SGX_SDK)/include/stlport  \
-			 -I$(SGX_SDK)/include/tlibc    \
-			 -I$(SGX_SDK)/include/libcxx
+			 -I$(SGX_SDK)/include/libcxx  \
+			 -I$(SGX_SDK)/include/tlibc
 
 Lib_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(Lib_Include_Paths) \
 			-nostdinc -fvisibility=hidden -fpie -fstack-protector
